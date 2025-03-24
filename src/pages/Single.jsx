@@ -1,60 +1,95 @@
 import { Link, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import PropTypes from "prop-types";
-import useGlobalReducer from "../hooks/useGlobalReducer";
-import DetailCard from "../components/DetailCard";
+import { useFavorites } from "../context/FavoritesContext"; // Contexto de favoritos
+
+const getImage = (type, uid) => `https://starwars-visualguide.com/assets/img/${type}/${uid}.jpg`;
 
 export const Single = () => {
-    const { store } = useGlobalReducer();
-    const { type, id } = useParams();  // Obtiene type (characters, planets, vehicles) e id desde la URL
+    const { type, id } = useParams();  // Obtiene el tipo (characters, planets, vehicles) y el ID desde la URL
+    const { favorites, dispatch } = useFavorites();
     const [data, setData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Buscar en el store si los datos ya están cargados
-        const storedData = store[type]?.find(item => item.uid === id);
-        
-        if (storedData) {
-            setData(storedData);
-            setLoading(false);
-        } else {
-            // Si no está en el store, hacer el fetch desde la API
-            fetch(`https://www.swapi.tech/api/${type}/${id}`)
-                .then(res => res.json())
-                .then(result => {
-                    setData(result.result.properties);
-                    setLoading(false);
-                })
-                .catch(error => {
-                    console.error("Error fetching data:", error);
-                    setError("No se pudo obtener la información.");
-                    setLoading(false);
-                });
-        }
-    }, [type, id, store]);
+        fetch(`https://www.swapi.tech/api/${type}/${id}`)
+            .then(res => res.json())
+            .then(result => {
+                setData(result.result.properties);
+                setLoading(false);
+            })
+            .catch(err => {
+                console.error("Error fetching details:", err);
+                setError("No se pudo obtener la información.");
+                setLoading(false);
+            });
+    }, [type, id]);
 
-    if (loading) return <h2 className="text-warning">Cargando detalles...</h2>;
-    if (error) return <h2 className="text-danger">{error}</h2>;
+    const handleFavorite = () => {
+        const isFavorite = favorites.some(fav => fav.uid === id);
+        if (isFavorite) {
+            dispatch({ type: "REMOVE_FAVORITE", payload: { uid: id } });
+        } else {
+            dispatch({ type: "ADD_FAVORITE", payload: { uid: id, name: data?.name, type } });
+        }
+    };
+
+    if (loading) return <h2 className="text-warning text-center">Cargando detalles...</h2>;
+    if (error) return <h2 className="text-danger text-center">{error}</h2>;
 
     return (
-        <div className="container text-center">
+        <div className="container text-center mt-5">
             <h1 className="display-4 text-warning">{data?.name || "Sin nombre"}</h1>
             <hr className="my-4" />
 
-            <p><strong>Descripción:</strong> {data?.description || "No disponible"}</p>
-            <p><strong>Altura:</strong> {data?.height || "N/A"}</p>
-            <p><strong>Género:</strong> {data?.gender || "N/A"}</p>
-            <p><strong>Modelo:</strong> {data?.model || "N/A"}</p>
+            <img 
+                src={getImage(type, uid)} 
+                className="img-fluid mb-3" 
+                alt={data?.name}
+                onError={(e) => (e.target.src = "https://via.placeholder.com/300x400?text=No+Image")}
+            />
 
-            <Link to="/">
-                <span className="btn btn-outline-warning btn-lg">Volver a Inicio</span>
-            </Link>
+            <div className="text-start">
+                <h5>Detalles:</h5>
+                {type === "characters" && (
+                    <>
+                        <p><strong>Altura:</strong> {data?.height || "N/A"}</p>
+                        <p><strong>Género:</strong> {data?.gender || "N/A"}</p>
+                        <p><strong>Color de piel:</strong> {data?.skin_color || "N/A"}</p>
+                        <p><strong>Color de cabello:</strong> {data?.hair_color || "N/A"}</p>
+                    </>
+                )}
+                {type === "vehicles" && (
+                    <>
+                        <p><strong>Modelo:</strong> {data?.model || "N/A"}</p>
+                        <p><strong>Fabricante:</strong> {data?.manufacturer || "N/A"}</p>
+                        <p><strong>Velocidad máxima:</strong> {data?.max_atmosphering_speed || "N/A"}</p>
+                        <p><strong>Pasajeros:</strong> {data?.passengers || "N/A"}</p>
+                    </>
+                )}
+                {type === "planets" && (
+                    <>
+                        <p><strong>Clima:</strong> {data?.climate || "N/A"}</p>
+                        <p><strong>Terreno:</strong> {data?.terrain || "N/A"}</p>
+                        <p><strong>Población:</strong> {data?.population || "N/A"}</p>
+                        <p><strong>Diámetro:</strong> {data?.diameter || "N/A"}</p>
+                    </>
+                )}
+            </div>
+
+            <div className="mt-4">
+                <button 
+                    className={`btn btn-lg ${favorites.some(fav => fav.uid === uid) ? "btn-danger" : "btn-outline-danger"}`}
+                    onClick={handleFavorite}
+                >
+                    {favorites.some(fav => fav.uid === uid) ? "❤️ Quitar de Favoritos" : "🤍 Agregar a Favoritos"}
+                </button>
+                <Link to="/" className="btn btn-outline-warning btn-lg ms-3">
+                    Volver a Inicio
+                </Link>
+            </div>
         </div>
     );
 };
 
-// Validar que los props sean del tipo correcto
-Single.propTypes = {
-    match: PropTypes.object
-};
+export default Single;

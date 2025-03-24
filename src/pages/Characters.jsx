@@ -1,70 +1,86 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import useGlobalReducer from "../hooks/useGlobalReducer";
-
+import { useFavorites } from "../context/FavoritesContext"; // Importamos favoritos
+import { Pagination } from "../components/Pagination"; // Componente de paginación
 
 const getImage = (type, uid) => {
-    return `https://raw.githubusercontent.com/tbone849/star-wars-guide/refs/heads/master/build/assets/img/${type}/${uid}.jpg`;
+    return `https://starwars-visualguide.com/assets/img/characters/${uid}.jpg`;
 };
-
-export const Characters = () => {
-    const { store, dispatch } = useGlobalReducer();
+const Characters = () => {
+    const { favorites, dispatch } = useFavorites(); // Hook de favoritos
+    const [characters, setCharacters] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
         const fetchCharacters = async () => {
+            setLoading(true);
             try {
-                const response = await fetch("https://www.swapi.tech/api/people");
-                if (!response.ok) throw new Error("Error al obtener los personajes");
-
-                const data = await response.json();
-
-                dispatch({
-                    type: "set_characters",
-                    payload: data.results,
-                });
-
+                const res = await fetch(`https://www.swapi.tech/api/people?page=${page}&limit=9`);
+                const data = await res.json();
+                setCharacters(data.results);
+                setTotalPages(Math.ceil(data.total_records / 9));
                 setLoading(false);
             } catch (err) {
-                setError(err.message);
+                console.error("Error fetching characters:", err);
+                setError("No se pudo obtener la información.");
                 setLoading(false);
             }
         };
+        fetchCharacters();
+    }, [page]);
 
-        if (!store.characters || store.characters.length === 0) {
-            fetchCharacters();
+    // Manejar favoritos
+    const handleFavorite = (character) => {
+        const isFavorite = favorites.some(fav => fav.uid === character.uid);
+        if (isFavorite) {
+            dispatch({ type: "REMOVE_FAVORITE", payload: character });
         } else {
-            setLoading(false);
+            dispatch({ type: "ADD_FAVORITE", payload: { ...character, type: "characters" } });
         }
-    }, [dispatch, store.characters]);
+    };
 
-    if (loading) return <div className="text-center mt-5">Cargando...</div>;
-    if (error) return <div className="text-center mt-5 text-danger">{error}</div>;
+    if (loading) return <h2 className="text-warning text-center">Cargando personajes...</h2>;
+    if (error) return <h2 className="text-danger text-center">{error}</h2>;
 
     return (
-        <div className="container mt-5">
-            <h1 className="text-center">Personajes de Star Wars 🌟</h1>
+        <div className="container mt-5 text-center">
+            <h1 className="text-warning">Personajes de Star Wars</h1>
+            <hr />
+
             <div className="row">
-                {store.characters?.map((character) => (
-                    <div key={character.uid} className="col-md-4 mb-3">
+                {characters.map((char) => (
+                    <div key={char.uid} className="col-md-4 mb-4">
                         <div className="card">
                             <img
-                                src={getImage("characters", character.uid)}
+                                src={getImage("characters", char.uid)}
                                 className="card-img-top"
-                                alt={character.name}
-                                onError={(e) => e.target.src = "https://via.placeholder.com/400x300?text=No+Image"}
+                                alt={char.name}
+                                onError={(e) => (e.target.src = "https://via.placeholder.com/150x200?text=No+Image")}
                             />
                             <div className="card-body">
-                                <h5 className="card-title">{character.name}</h5>
-                                <Link to={`/single/characters/${character.uid}`} className="btn btn-primary">
-                                    Ver Detalles
+                                <h5 className="card-title">{char.name}</h5>
+                                <Link to={`/single/characters/${char.uid}`} className="btn btn-warning btn-sm me-2">
+                                    Ver más
                                 </Link>
+                                <button
+                                    className={`btn btn-sm ${favorites.some(fav => fav.uid === char.uid) ? "btn-danger" : "btn-outline-danger"}`}
+                                    onClick={() => handleFavorite(char)}
+                                >
+                                    {favorites.some(fav => fav.uid === char.uid) ? "❤️" : "🤍"}
+                                </button>
                             </div>
                         </div>
                     </div>
                 ))}
             </div>
+
+            {/* Paginación */}
+            <Pagination page={page} totalPages={totalPages} setPage={setPage} />
         </div>
     );
 };
+
+export default Characters;

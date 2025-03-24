@@ -1,92 +1,101 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import useGlobalReducer from "../hooks/useGlobalReducer";
+import useFetchData from "../hooks/useFetchData";
 
-export const Home = () => {
-    const { store, dispatch } = useGlobalReducer();
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+const getImage = (type, uid) => {
+    const typeMap = {
+        characters: "characters",
+        people: "characters",
+        vehicles: "vehicles",
+        planets: "planets"
+    };
+    return `https://starwars-visualguide.com/assets/img/${typeMap[type]}/${uid}.jpg`;
+};
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                dispatch({ type: "FETCH_START" });
+const Home = () => {
+    const { data: characters, loading: loadingCharacters } = useFetchData("people");
+    const { data: vehicles, loading: loadingVehicles } = useFetchData("vehicles");
+    const { data: planets, loading: loadingPlanets } = useFetchData("planets");
 
-                const urls = [
-                    { category: "characters", url: "https://www.swapi.tech/api/people" },
-                    { category: "vehicles", url: "https://www.swapi.tech/api/vehicles" },
-                    { category: "planets", url: "https://www.swapi.tech/api/planets" }
-                ];
-
-                const responses = await Promise.all(
-                    urls.map(({ url }) => fetch(url).then(res => res.json()))
-                );
-
-                responses.forEach((data, index) => {
-                    dispatch({
-                        type: "FETCH_SUCCESS",
-                        payload: {
-                            category: urls[index].category,
-                            data: data.results
-                        }
-                    });
-                });
-
-                setLoading(false);
-            } catch (err) {
-                setError("Error al cargar los datos");
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [dispatch]);
-
-    if (loading) return <div className="text-center mt-5">Cargando datos...</div>;
-    if (error) return <div className="text-center mt-5 text-danger">{error}</div>;
+    if (loadingCharacters || loadingVehicles || loadingPlanets) {
+        return <div className="text-center mt-5">Cargando...</div>;
+    }
 
     return (
         <div className="container text-center mt-5">
-            <h1>Bienvenido al Universo de Star Wars 🌌</h1>
-            <p>Explora personajes, vehículos y planetas de la saga.</p>
+            <h1 className="mb-4">Explora el Universo de Star Wars 🚀</h1>
 
-            <div className="d-flex justify-content-center mt-4">
-                <Link to="/characters" className="btn btn-primary mx-2">Personsajes</Link>
-                <Link to="/vehicles" className="btn btn-secondary mx-2">Vehículos</Link>
-                <Link to="/planets" className="btn btn-success mx-2">Planetas</Link>
+            {/* 🦸‍♂️ Personajes */}
+            <h2 className="text-warning">Personajes</h2>
+            <div className="row">
+                {characters.slice(0, 3).map((char) => (
+                    <div key={char.uid} className="col-md-4">
+                        <div className="card">
+                            <img
+                                src={getImage("characters", char.uid)}
+                                className="card-img-top"
+                                alt={char.name}
+                                onError={(e) => (e.target.src = "https://via.placeholder.com/150x200?text=No+Image")}
+                            />
+                            <div className="card-body">
+                                <h5 className="card-title">{char.name}</h5>
+                                <Link to={`/single/characters/${char.uid}`} className="btn btn-warning btn-sm">
+                                    Ver más
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
+            <Link to="/characters" className="btn btn-outline-warning mt-3">Ver todos los personajes</Link>
 
-            {/* Lista de Personajes */}
-            <div className="mt-5">
-                <h3>Personajes</h3>
-                <ul className="list-group">
-                    {store?.characters?.slice(0, 5).map((char, index) => (
-                        <li key={index} className="list-group-item">
-                            {char.name}
-                        </li>
-                    ))}
-                </ul>
-
-                {/* Lista de Vehículos */}
-                <h3 className="mt-4">Vehículos</h3>
-                <ul className="list-group">
-                    {store?.vehicles?.slice(0, 5).map((vehicle, index) => (
-                        <li key={index} className="list-group-item">
-                            {vehicle.name}
-                        </li>
-                    ))}
-                </ul>
-
-                {/* Lista de Planetas */}
-                <h3 className="mt-4">Planetas</h3>
-                <ul className="list-group">
-                    {store?.planets?.slice(0, 5).map((planet, index) => (
-                        <li key={index} className="list-group-item">
-                            {planet.name}
-                        </li>
-                    ))}
-                </ul>
+            {/* 🚗 Vehículos */}
+            <h2 className="mt-4 text-primary">Vehículos</h2>
+            <div className="row">
+                {vehicles.slice(0, 3).map((vehicle) => (
+                    <div key={vehicle.uid} className="col-md-4">
+                        <div className="card">
+                            <img
+                                src={getImage("vehicles", vehicle.uid)}
+                                className="card-img-top"
+                                alt={vehicle.name}
+                                onError={(e) => (e.target.src = "https://via.placeholder.com/150x200?text=No+Image")}
+                            />
+                            <div className="card-body">
+                                <h5 className="card-title">{vehicle.name}</h5>
+                                <Link to={`/single/vehicles/${vehicle.uid}`} className="btn btn-primary btn-sm">
+                                    Ver más
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                ))}
             </div>
+            <Link to="/vehicles" className="btn btn-outline-primary mt-3">Ver todos los vehículos</Link>
+
+            {/* 🌍 Planetas */}
+            <h2 className="mt-4 text-success">Planetas</h2>
+            <div className="row">
+                {planets.slice(0, 3).map((planet) => (
+                    <div key={planet.uid} className="col-md-4">
+                        <div className="card">
+                            <img
+                                src={getImage("planets", planet.uid)}
+                                className="card-img-top"
+                                alt={planet.name}
+                                onError={(e) => (e.target.src = "https://via.placeholder.com/150x200?text=No+Image")}
+                            />
+                            <div className="card-body">
+                                <h5 className="card-title">{planet.name}</h5>
+                                <Link to={`/single/planets/${planet.uid}`} className="btn btn-success btn-sm">
+                                    Ver más
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+            <Link to="/planets" className="btn btn-outline-success mt-3">Ver todos los planetas</Link>
         </div>
     );
 };
