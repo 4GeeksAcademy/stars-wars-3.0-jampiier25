@@ -4,9 +4,8 @@ import { useFavorites } from "../context/FavoritesContext";
 import { Pagination } from "../components/Pagination";
 
 const getImage = (type, uid) => {
-    return `https://starwars-visualguide.com/assets/img/vehicles/${uid}.jpg`;
+    return `https://raw.githubusercontent.com/tbone849/star-wars-guide/refs/heads/master/build/assets/img/${type}/${uid}.jpg`;
 };
-
 
 const Vehicles = () => {
     const { favorites, dispatch } = useFavorites();
@@ -47,8 +46,8 @@ const Vehicles = () => {
     if (error) return <h2 className="text-danger text-center">{error}</h2>;
 
     return (
-        <div className="container mt-5 text-center">
-            <h1 className="text-warning">Vehículos de Star Wars</h1>
+        <div className="container mt-5 text-center ">
+            <h1 className="text-primary">Vehículos de Star Wars</h1>
             <hr />
 
             <div className="row">
@@ -63,7 +62,7 @@ const Vehicles = () => {
                             />
                             <div className="card-body">
                                 <h5 className="card-title">{veh.name}</h5>
-                                <Link to={`/single/vehicles/${veh.uid}`} className="btn btn-warning btn-sm me-2">
+                                <Link to={`/single/vehicles/${veh.uid}`} className="btn btn-primary btn-sm me-2">
                                     Ver más
                                 </Link>
                                 <button

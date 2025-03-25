@@ -6,10 +6,13 @@ import { StoreProvider } from "./hooks/useGlobalReducer"; // Asegura que esté b
 import "bootstrap/dist/css/bootstrap.min.css";
 import { FavoritesProvider } from "./context/FavoritesContext";
 
+
 const Main = () => (
     <React.StrictMode>
         <StoreProvider>
-            <RouterProvider router={router} />
+             <FavoritesProvider>
+                <RouterProvider router={router} />
+            </FavoritesProvider>
         </StoreProvider>
     </React.StrictMode>
 );

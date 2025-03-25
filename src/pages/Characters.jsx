@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import { useFavorites } from "../context/FavoritesContext"; // Importamos favoritos
 import { Pagination } from "../components/Pagination"; // Componente de paginación
 
+
 const getImage = (type, uid) => {
-    return `https://starwars-visualguide.com/assets/img/characters/${uid}.jpg`;
+    return `https://raw.githubusercontent.com/tbone849/star-wars-guide/refs/heads/master/build/assets/img/${type}/${uid}.jpg`;
 };
+
 const Characters = () => {
     const { favorites, dispatch } = useFavorites(); // Hook de favoritos
     const [characters, setCharacters] = useState([]);
@@ -62,7 +64,7 @@ const Characters = () => {
                             />
                             <div className="card-body">
                                 <h5 className="card-title">{char.name}</h5>
-                                <Link to={`/single/characters/${char.uid}`} className="btn btn-warning btn-sm me-2">
+                                <Link to={`/single/people/${char.uid}`} className="btn btn-warning btn-sm me-2">
                                     Ver más
                                 </Link>
                                 <button

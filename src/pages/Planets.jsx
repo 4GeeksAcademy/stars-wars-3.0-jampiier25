@@ -4,9 +4,8 @@ import { useFavorites } from "../context/FavoritesContext";
 import { Pagination } from "../components/Pagination";
 
 const getImage = (type, uid) => {
-    return `https://starwars-visualguide.com/assets/img/planets/${uid}.jpg`;
+    return `https://raw.githubusercontent.com/tbone849/star-wars-guide/refs/heads/master/build/assets/img/${type}/${uid}.jpg`;
 };
-
 
 const Planets = () => {
     const { favorites, dispatch } = useFavorites();
@@ -48,11 +47,13 @@ const Planets = () => {
 
     return (
         <div className="container mt-5 text-center">
-            <h1 className="text-warning">Planetas de Star Wars</h1>
+            <h1 className="text-success">Planetas de Star Wars</h1>
             <hr />
 
             <div className="row">
-                {planets.map((plan) => (
+            {planets 
+            .filter((plan) => plan.uid !== "1") // Filtra Tatooine (u otro planeta sin imagen)
+            .map((plan) => (
                     <div key={plan.uid} className="col-md-4 mb-4">
                         <div className="card">
                             <img
@@ -63,7 +64,7 @@ const Planets = () => {
                             />
                             <div className="card-body">
                                 <h5 className="card-title">{plan.name}</h5>
-                                <Link to={`/single/planets/${plan.uid}`} className="btn btn-warning btn-sm me-2">
+                                <Link to={`/single/planets/${plan.uid}`} className="btn btn-success btn-sm me-2">
                                     Ver más
                                 </Link>
                                 <button

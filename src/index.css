@@ -1,0 +1,32 @@
+body{
+    background-size:cover ;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: url("https://images.unsplash.com/photo-1472712739516-7ad2b786e1f7?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D");
+    background-attachment: fixed;
+    
+
+}
+.card{
+transition: ease-in-out .75s;
+animation: glow 3.75s infinite alternate;
+}
+.card:hover{
+    animation: glow 3.75s infinite alternate;
+    transform: scale(1.1);
+
+}
+@keyframes glow {
+    0% { box-shadow: 0px 0px 5px rgba(255, 217, 0, 0.932); }
+    50% { box-shadow: 0px 0px 30px rgba(0, 217, 255, 0.623); }
+    100% { box-shadow: 0px 0px 5px rgb(0, 255, 34); }
+    /*animation: glow 1.5s infinite alternate;*/
+}
+@keyframes glows {
+    0% { text-shadow: 0px 0px 5px rgba(196, 191, 195, 0.705); }
+    50% { text-shadow: 0px 0px 15px rgba(253, 252, 253, 0.7); }
+    100% { text-shadow: 0px 0px 5px rgb(255, 255, 255); }
+}
+h2{
+    animation: glows 1.5s infinite alternate;
+}

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
+
+
 const SearchBar = () => {
     const [query, setQuery] = useState("");
     const [results, setResults] = useState([]);
@@ -18,15 +20,19 @@ const SearchBar = () => {
             try {
                 const endpoints = ["people", "planets", "vehicles"];
                 const requests = endpoints.map(endpoint =>
-                    fetch(`https://www.swapi.tech/api/${endpoint}/?name=${query}`).then(res => res.json())
+                    fetch(`https://www.swapi.tech/api/${endpoint}`).then(res => res.json())
                 );
 
                 const responses = await Promise.all(requests);
+
+                // 🔍 Filtrar los resultados por nombre
                 const formattedResults = responses.flatMap((response, index) =>
-                    response.result?.map(item => ({
+                    response.results?.filter(item =>
+                        item.name.toLowerCase().includes(query.toLowerCase())
+                    ).map(item => ({
                         name: item.name,
                         uid: item.uid,
-                        type: endpoints[index] === "people" ? "characters" : endpoints[index]
+                        type: endpoints[index] // ❌ Aquí estaba "characters" en vez de "people"
                     })) || []
                 );
 
@@ -62,7 +68,7 @@ const SearchBar = () => {
                 onChange={handleSearch}
             />
             {loading && <div className="spinner-border text-warning position-absolute top-50 start-50 translate-middle" role="status"></div>}
-            
+
             {results.length > 0 && (
                 <ul className="list-group position-absolute w-100 mt-1 z-3 bg-dark">
                     {results.map((item) => (

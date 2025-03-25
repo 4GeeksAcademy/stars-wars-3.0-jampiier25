@@ -1,5 +1,9 @@
+import "../index.css";
+
+
+
 export const Footer = () => (
-    <footer className="footer mt-auto py-3 text-center bg-dark text-light">
+    <footer className="footer mt-auto py-3 text-center text-light">
         <p className="mb-1">
             <i className="fa-solid fa-jedi text-warning"></i> May the force be with You <i className="fa-solid fa-jedi text-warning"></i>
         </p>
